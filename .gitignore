@@ -7,3 +7,4 @@ mlx-pretrain/runs/*
 mlx-pretrain/MLX-Llama*
 **/*.jsonl
 *.jsonl
+mlx-pretrain/MLX-*

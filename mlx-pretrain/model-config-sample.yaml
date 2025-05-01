@@ -1,4 +1,4 @@
-name: "Llama (2M)"
+name: "LLama-512_1024_12" #"Llama (2M)"
 overwrite: true
 data:
   input_file: "train.jsonl"
@@ -23,9 +23,9 @@ data:
 model:
   architecture: "llama"
   dimensions:
-    hidden_size: 128
-    intermediate_size: 256  # 384 * 4
-    num_layers: 4
+    hidden_size: 512 # 128
+    intermediate_size: 1024 #256  # 384 * 4
+    num_layers: 12 # 4
   attention:
     num_heads: 8
     num_kv_heads: null  # If null, equals num_heads
