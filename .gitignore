@@ -8,3 +8,7 @@ mlx-pretrain/MLX-Llama*
 **/*.jsonl
 *.jsonl
 mlx-pretrain/MLX-*
+**/__pycache__
+__pycache__
+ADAPTERS
+mlx_models
