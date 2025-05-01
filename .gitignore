@@ -1,0 +1,9 @@
+DATA
+*.json
+**/*.json
+**/runs
+**/MLX-Llama*
+mlx-pretrain/runs/*
+mlx-pretrain/MLX-Llama*
+**/*.jsonl
+*.jsonl

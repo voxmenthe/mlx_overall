@@ -3,12 +3,14 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "mlx_proj"
+name = "mlx_overall"
 version = "0.1.0"
-description = "MLX Projects"
+description = "MLX Overall Repo"
 authors = ["Jeff Coggshall <thenextlocalminima@gmail.com>"]
 readme = "README.md"
-packages = [{include = "mlx_proj", from = "src"}]
+packages = [
+    { include = "src" }
+]
 license = "MIT"
 
 [tool.poetry.dependencies]
@@ -22,8 +24,12 @@ mlx-vlm = "*"
 mlx-whisper = "*"
 llm-mlx = "*"
 mlx-embeddings = "*"
+mlx_optimizers = "*"
+PyYAML = "*"
+tokenizers = "*"
 numpy = "*"
 pandas = "*"
+matplotlib = "*"
 datasets = "*"
 transformers = "*"
 huggingface_hub = "*"
