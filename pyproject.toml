@@ -1,0 +1,48 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "mlx_proj"
+version = "0.1.0"
+description = "MLX Projects"
+authors = ["Jeff Coggshall <thenextlocalminima@gmail.com>"]
+readme = "README.md"
+packages = [{include = "mlx_proj", from = "src"}]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+pip = "*"
+accelerate = "*"
+mlx = "*"
+mlx-lm = "*"
+mlx-audio = "*"
+mlx-vlm = "*"
+mlx-whisper = "*"
+llm-mlx = "*"
+mlx-embeddings = "*"
+numpy = "*"
+pandas = "*"
+datasets = "*"
+transformers = "*"
+huggingface_hub = "*"
+hf_transfer = "*"
+ipykernel = "*"
+sentencepiece = "*"
+torch = "*"
+torchao = "*"
+torchvision = "*"
+torchaudio = "*"
+fairscale = "*"
+fire = "*"
+jax = "*"
+flax = "*"
+optax = "*"
+einops = "*"
+diffusers = "*"
+tqdm = "*"
+
+[tool.poetry.scripts]
+# Add command line scripts here
+
