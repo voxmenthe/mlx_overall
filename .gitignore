@@ -12,3 +12,4 @@ mlx-pretrain/MLX-*
 __pycache__
 ADAPTERS
 mlx_models
+**/sacredhunger.txt

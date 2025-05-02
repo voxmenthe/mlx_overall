@@ -13,18 +13,18 @@ MODEL_PATH="mlx_models/Qwen3-4B-mlx"
 # Optionally, it can contain 'test.jsonl' if RUN_TEST=true.
 # This path is relative to where you run the script from.
 # See mlx-lm/mlx_lm/LORA.md#data for format details.
-DATA_PATH="DATA/WIKISQL"
+DATA_PATH="DATA/SACREDHUNGER"
 
 # Directory to save the LoRA adapters (relative to where you run the script)
-ADAPTER_PATH="ADAPTERS/qwen3_4b_lora" # Example, adjust as needed
+ADAPTER_PATH="ADAPTERS/qwen3_4b_lora_sacredhunger" # Example, adjust as needed
 
 # Training parameters (adjust as needed)
-ITERS=600          # Number of training iterations
+ITERS=1600          # Number of training iterations
 BATCH_SIZE=1       # Batch size (reduce if hitting memory limits)
 LEARNING_RATE=1e-5 # Learning rate
 SAVE_EVERY=100     # Save adapter weights every N iterations
-NUM_LAYERS=16      # Number of layers to apply LoRA to (-1 for all)
-MAX_SEQ_LENGTH=2048 # Max sequence length model can handle
+NUM_LAYERS=-1 # 16      # Number of layers to apply LoRA to (-1 for all)
+MAX_SEQ_LENGTH=2315 # Max sequence length model can handle
 
 # Evaluation parameters (optional)
 RUN_TEST=false     # Set to true to run evaluation on test.jsonl after training
@@ -72,7 +72,8 @@ echo "PYTHONPATH set to: $PYTHONPATH"
 CMD=(
     "python"
     "-m"
-    "mlx_lm.lora"
+    "mlx_lm"
+    "lora"
     "--model" "$MODEL_PATH"
     "--train"
     "--data" "$DATA_PATH"

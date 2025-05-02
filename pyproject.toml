@@ -49,6 +49,8 @@ optax = "*"
 einops = "*"
 diffusers = "*"
 tqdm = "*"
+rank-bm25 = {git = "https://github.com/dorianbrown/rank_bm25.git"}
+sentence-transformers = "*"
 
 [tool.poetry.scripts]
 # Add command line scripts here
