@@ -4,6 +4,27 @@
 
 # --- Configuration ---
 
+# Default fine-tuning type
+FINE_TUNE_TYPE="lora" # Default: "lora". Can be overridden with --tune-type flag ("lora", "dora", "full")
+CONFIG_PATH="src/finetuning/lora_config.yaml"         # Optional path to a YAML config file for detailed LoRA/optimizer settings
+
+# --- Argument Parsing ---
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --tune-type) FINE_TUNE_TYPE="$2"; shift ;;
+        --config) CONFIG_PATH="$2"; shift ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+# Validate FINE_TUNE_TYPE
+if [[ "$FINE_TUNE_TYPE" != "lora" && "$FINE_TUNE_TYPE" != "dora" && "$FINE_TUNE_TYPE" != "full" ]]; then
+    echo "Error: Invalid --tune-type specified: '$FINE_TUNE_TYPE'. Must be 'lora', 'dora', or 'full'."
+    exit 1
+fi
+echo "Using Fine-Tuning Type: $FINE_TUNE_TYPE"
+
 # !!! IMPORTANT: Set this path to your *local* converted MLX model directory !!!
 # Example: ../../mlx_models/Qwen3-4B-mlx
 MODEL_PATH="mlx_models/Qwen3-4B-mlx"
@@ -16,7 +37,7 @@ MODEL_PATH="mlx_models/Qwen3-4B-mlx"
 DATA_PATH="DATA/SACREDHUNGER"
 
 # Directory to save the LoRA adapters (relative to where you run the script)
-ADAPTER_PATH="ADAPTERS/qwen3_4b_lora_sacredhunger" # Example, adjust as needed
+ADAPTER_PATH="ADAPTERS/qwen3_4b_${FINE_TUNE_TYPE}_sacredhunger" # Example, adjust as needed
 
 # Training parameters (adjust as needed)
 ITERS=1600          # Number of training iterations
@@ -24,7 +45,7 @@ BATCH_SIZE=1       # Batch size (reduce if hitting memory limits)
 LEARNING_RATE=1e-5 # Learning rate
 SAVE_EVERY=100     # Save adapter weights every N iterations
 NUM_LAYERS=-1 # 16      # Number of layers to apply LoRA to (-1 for all)
-MAX_SEQ_LENGTH=2315 # Max sequence length model can handle
+MAX_SEQ_LENGTH=2581 # Max sequence length model can handle
 
 # Evaluation parameters (optional)
 RUN_TEST=false     # Set to true to run evaluation on test.jsonl after training
@@ -85,10 +106,21 @@ CMD=(
     "--num-layers" "$NUM_LAYERS"
     "--max-seq-length" "$MAX_SEQ_LENGTH"
     "--val-batches" "$VAL_BATCHES"
+    "--fine-tune-type" "$FINE_TUNE_TYPE"
     # Add optional flags
     # "--grad-checkpoint" # Use gradient checkpointing to save memory
     # "--mask-prompt"     # Ignore prompt tokens in loss calculation
 )
+
+# Add config file if provided
+if [ -n "$CONFIG_PATH" ]; then
+  if [ ! -f "$CONFIG_PATH" ]; then
+      echo "Error: Config file specified but not found: '$CONFIG_PATH'"
+      exit 1
+  fi
+  echo "Using config file: $CONFIG_PATH"
+  CMD+=("--config" "$CONFIG_PATH")
+fi
 
 if [ "$RUN_TEST" = true ]; then
     if [ ! -f "$DATA_PATH/test.jsonl" ]; then # Check in DATA_PATH directory
