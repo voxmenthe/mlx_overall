@@ -5,7 +5,7 @@
 # --- Configuration ---
 
 # Default fine-tuning type
-FINE_TUNE_TYPE="lora" # Default: "lora". Can be overridden with --tune-type flag ("lora", "dora", "full")
+FINE_TUNE_TYPE="dora" # "lora" # Default: "lora". Can be overridden with --tune-type flag ("lora", "dora", "full")
 CONFIG_PATH="src/finetuning/lora_config.yaml"         # Optional path to a YAML config file for detailed LoRA/optimizer settings
 
 # --- Argument Parsing ---
@@ -27,25 +27,25 @@ echo "Using Fine-Tuning Type: $FINE_TUNE_TYPE"
 
 # !!! IMPORTANT: Set this path to your *local* converted MLX model directory !!!
 # Example: ../../mlx_models/Qwen3-4B-mlx
-MODEL_PATH="mlx_models/Qwen3-4B-mlx"
+MODEL_PATH="mlx_models/Qwen3-14B-mlx"
 
 # !!! IMPORTANT: Path to the directory containing your training data files !!!
 # This directory MUST contain files named exactly 'train.jsonl' and 'valid.jsonl'.
 # Optionally, it can contain 'test.jsonl' if RUN_TEST=true.
 # This path is relative to where you run the script from.
 # See mlx-lm/mlx_lm/LORA.md#data for format details.
-DATA_PATH="DATA/SACREDHUNGER"
+DATA_PATH="DATA/NOVELS"
 
 # Directory to save the LoRA adapters (relative to where you run the script)
-ADAPTER_PATH="ADAPTERS/qwen3_4b_${FINE_TUNE_TYPE}_sacredhunger" # Example, adjust as needed
+ADAPTER_PATH=f"ADAPTERS/qwen3_14b_${FINE_TUNE_TYPE}_novels_sh_atkm" # _atkm_multi" # Example, adjust as needed
 
 # Training parameters (adjust as needed)
-ITERS=1600          # Number of training iterations
-BATCH_SIZE=1       # Batch size (reduce if hitting memory limits)
+ITERS=3200          # Number of training iterations
+BATCH_SIZE=1      # Batch size (reduce if hitting memory limits)
 LEARNING_RATE=1e-5 # Learning rate
 SAVE_EVERY=100     # Save adapter weights every N iterations
 NUM_LAYERS=-1 # 16      # Number of layers to apply LoRA to (-1 for all)
-MAX_SEQ_LENGTH=2581 # Max sequence length model can handle
+MAX_SEQ_LENGTH=3927 # Max sequence length model can handle
 
 # Evaluation parameters (optional)
 RUN_TEST=false     # Set to true to run evaluation on test.jsonl after training
@@ -101,7 +101,7 @@ CMD=(
     "--adapter-path" "$ADAPTER_PATH"
     "--iters" "$ITERS"
     "--batch-size" "$BATCH_SIZE"
-    "--learning-rate" "$LEARNING_RATE"
+    # "--learning-rate" "$LEARNING_RATE" # Let config file override this if provided
     "--save-every" "$SAVE_EVERY"
     "--num-layers" "$NUM_LAYERS"
     "--max-seq-length" "$MAX_SEQ_LENGTH"

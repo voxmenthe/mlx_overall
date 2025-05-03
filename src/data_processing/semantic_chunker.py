@@ -97,8 +97,10 @@ def refine_boundaries(chunks: list[str],
 if __name__ == "__main__":
     import argparse
 
-    DEFAULT_TARGET_WORDS = 510
+    DEFAULT_TARGET_WORDS = 480 # 480 520 680 790
     DEFAULT_MODEL_NAME = "lightonai/modernbert-embed-large"
+    DEFAULT_BOOK_PATH = "allthekingsmen.txt"
+    DEFAULT_OUTPUT_PATH = f"allthekingsmen_{DEFAULT_TARGET_WORDS}.json"
 
     ap = argparse.ArgumentParser(
         description="Chunk a book into semantic segments, refining initial paragraph-based chunks."
@@ -106,8 +108,8 @@ if __name__ == "__main__":
     ap.add_argument(
         "--book_path",
         type=str,
-        default="sacredhunger.txt",
-        help="Path to the input text file (book). Defaults to 'sacredhunger.txt'.",
+        default=DEFAULT_BOOK_PATH,
+        help=f"Path to the input text file (book). Defaults to '{DEFAULT_BOOK_PATH}'.",
     )
     ap.add_argument(
         "--target",
@@ -122,7 +124,17 @@ if __name__ == "__main__":
         default=DEFAULT_MODEL_NAME,
         help=f"Name of the SentenceTransformer model to use for embeddings (default: {DEFAULT_MODEL_NAME})."
     )
+    ap.add_argument(
+        "--output_path",
+        type=str,
+        default=DEFAULT_OUTPUT_PATH,
+        help=f"Path to the output file (default: {DEFAULT_OUTPUT_PATH})."
+    )
     args = ap.parse_args()
+
+    if args.target != DEFAULT_TARGET_WORDS:
+        args.output_path = f"allthekingsmen_{args.target}.json"
+        print(f"Using output path: {args.output_path}")
 
     print(f"Loading sentence transformer model: {args.model_name}")
     model = SentenceTransformer(args.model_name, trust_remote_code=True)
@@ -137,7 +149,7 @@ if __name__ == "__main__":
     refined, mod_count = refine_boundaries(base, model=model) # Capture modification count
     print(f"Refinement process modified {mod_count} chunk boundaries.") # Print count
 
-    Path("semantic_chunks.json").write_text(
+    Path(args.output_path).write_text(
         json.dumps({"chunks": refined, "count": len(refined)}, indent=2),
         encoding="utf‑8")
-    print(f"Wrote {len(refined)} refined chunks to semantic_chunks.json")
+    print(f"Wrote {len(refined)} refined chunks to {args.output_path}")

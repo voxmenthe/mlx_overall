@@ -1,3 +1,24 @@
+
+"""
+Usage:
+
+# WITH ADAPTER
+cat temp_prompt.txt | python src/inference/generate_qwen3.py \
+--model-path mlx_models/Qwen3-4B-mlx \
+--adapter-path ADAPTERS/qwen3_4b_lora_sacredhunger \
+--prompt "-" \
+--repetition-penalty 1.1 \
+--temp 0.75 \
+--top-p 0.95 
+
+# WITHOUT ADAPTER
+cat temp_prompt.txt | python src/inference/generate_qwen3.py \
+--model-path mlx_models/Qwen3-4B-mlx \
+--prompt "-" \
+--repetition-penalty 1.1 \
+--temp 0.75 \
+"""
+
 import argparse
 import sys
 import time
@@ -35,14 +56,38 @@ def main(args):
         print("src/finetuning/download_qwen3.py")
         sys.exit(1)
 
-    print(f"Loading model from {model_path}...")
+    adapter_path = args.adapter_path
+    if adapter_path:
+        adapter_path = Path(adapter_path)
+        if not adapter_path.exists():
+            print(f"Error: Adapter path does not exist: {adapter_path}")
+            sys.exit(1)
+        print(f"Loading model from {model_path} with adapter from {adapter_path}...")
+    else:
+        print(f"Loading model from {model_path}...")
+
     try:
-        model, tokenizer = load(args.model_path)
+        model, tokenizer = load(args.model_path, adapter_path=str(adapter_path) if adapter_path else None)
     except Exception as e:
-        print(f"Error loading the model: {e}")
+        print(f"Error loading the model or adapter: {e}")
         sys.exit(1)
     
     print("Model loaded.")
+
+    # Handle prompt input (stdin or argument)
+    if args.prompt == "-":
+        print("Reading prompt from stdin...")
+        try:
+            prompt_input = sys.stdin.read()
+        except EOFError:
+            print("Error: Reached end of input while reading from stdin.")
+            sys.exit(1)
+        if not prompt_input:
+             print("Error: Received empty prompt from stdin.")
+             sys.exit(1)
+    else:
+        # Replace escaped newlines/tabs if coming from command line
+        prompt_input = args.prompt.replace("\\n", "\n").replace("\\t", "\t")
 
     # Prepare the prompt (apply chat template if requested and available)
     if args.use_chat_template and hasattr(tokenizer, 'chat_template') and tokenizer.chat_template is not None:
@@ -50,7 +95,7 @@ def main(args):
         messages = []
         if args.system_prompt:
             messages.append({"role": "system", "content": args.system_prompt})
-        messages.append({"role": "user", "content": args.prompt})
+        messages.append({"role": "user", "content": prompt_input})
         
         try:
             prompt_str = tokenizer.apply_chat_template(
@@ -65,7 +110,7 @@ def main(args):
             print(f"Error applying chat template: {e}")
             print("Falling back to raw prompt encoding.")
             # Fallback if template application fails
-            encoded_prompt = tokenizer.encode(args.prompt, add_special_tokens=True) 
+            encoded_prompt = tokenizer.encode(prompt_input, add_special_tokens=True) # Use original input
 
     else:
         if not args.use_chat_template:
@@ -74,7 +119,7 @@ def main(args):
             print("No chat template found in tokenizer.")
         print("Encoding raw prompt...")
         # Encode raw prompt, assuming default BOS/EOS handling is desired
-        encoded_prompt = tokenizer.encode(args.prompt, add_special_tokens=True)
+        encoded_prompt = tokenizer.encode(prompt_input, add_special_tokens=True) # Use original input
     
     encoded_prompt = mx.array(encoded_prompt)
 
@@ -112,7 +157,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run inference with a converted MLX model.")
+    parser = argparse.ArgumentParser(description="Run inference with a converted MLX model, optionally using LoRA adapters.")
     
     # --- Model and Prompt Arguments ---
     parser.add_argument(
@@ -122,10 +167,16 @@ if __name__ == "__main__":
         help="Path to the directory containing the converted MLX model files (e.g., <project_root>/mlx_models/Qwen3-14B-mlx)."
     )
     parser.add_argument(
+        "--adapter-path",
+        type=str,
+        default=None,
+        help="Optional path to the directory containing the trained LoRA adapter weights (`adapters.safetensors`) and config (`adapter_config.json`)."
+    )
+    parser.add_argument(
         "--prompt",
         type=str,
         required=True,
-        help="The input prompt for the model."
+        help="The input prompt for the model, or '-' to read from stdin."
     )
     parser.add_argument(
         "--use-chat-template",
@@ -151,7 +202,7 @@ if __name__ == "__main__":
         "--max-tokens",
         type=int,
         default=3200, #32768,
-        help="Maximum number of tokens to generate. [Default: 32768]"
+        help="Maximum number of tokens to generate. [Default: 3200]"
     )
     parser.add_argument(
         "--temp",
@@ -206,37 +257,61 @@ if __name__ == "__main__":
     main(args)
 
     # --- Example Test Cases ---
-    # (Replace <path_to_your_mlx_model> with the actual path)
+    # (Replace paths as needed)
     # 
-    # 1. Basic generation:
+    # 1. Basic generation (no adapter):
     # python src/inference/generate_qwen3.py \
-    #   --model-path <path_to_your_mlx_model> \
+    #   --model-path mlx_models/Qwen3-4B-mlx \
     #   --prompt "Tell me a short story about a brave knight."
     # 
-    # 2. More creative output (higher temperature):
+    # 2. Generation with an adapter:
     # python src/inference/generate_qwen3.py \
-    #   --model-path <path_to_your_mlx_model> \
+    #   --model-path mlx_models/Qwen3-4B-mlx \
+    #   --adapter-path ADAPTERS/qwen3_4b_lora_sacredhunger \
+    #   --prompt "Write a paragraph in the style of the finetuning data."
+    # 
+    # 2b. Generation with adapter, reading long prompt from stdin:
+    # cat prompt.txt | python src/inference/generate_qwen3.py \\
+    #   --model-path mlx_models/Qwen3-4B-mlx \\
+    #   --adapter-path ADAPTERS/qwen3_4b_lora_sacredhunger \\
+    #   --prompt "-"
+    # (Where prompt.txt contains your long prompt)
+    #
+    # 2c. Generation with adapter, using a 'here document' for prompt:
+    # python src/inference/generate_qwen3.py \\
+    #   --model-path mlx_models/Qwen3-4B-mlx \\
+    #   --adapter-path ADAPTERS/qwen3_4b_lora_sacredhunger \\
+    #   --prompt "-" <<EOF
+    # This is a very long prompt
+    # that spans multiple lines.
+    # The shell will pass this text to the script's stdin.
+    # EOF
+    #
+    # 3. More creative output (higher temperature):
+    # python src/inference/generate_qwen3.py \
+    #   --model-path mlx_models/Qwen3-4B-mlx \
     #   --prompt "What if the moon was made of cheese?" \
     #   --temp 1.0 \
     #   --max-tokens 150
     #
-    # 3. More focused output (lower temperature, top-p):
+    # 4. More focused output (lower temperature, top-p):
     # python src/inference/generate_qwen3.py \
-    #   --model-path <path_to_your_mlx_model> \
+    #   --model-path mlx_models/Qwen3-4B-mlx \
     #   --prompt "Explain the concept of photosynthesis in simple terms." \
     #   --temp 0.3 \
     #   --top-p 0.9 \
     #   --max-tokens 200
     #
-    # 4. Discourage repetition:
+    # 5. Discourage repetition:
     # python src/inference/generate_qwen3.py \
-    #   --model-path <path_to_your_mlx_model> \
+    #   --model-path mlx_models/Qwen3-4B-mlx \
     #   --prompt "List the planets in our solar system, starting from the sun." \
     #   --repetition-penalty 1.2 \
     #   --max-tokens 50
     #
-    # 5. Stream output token by token:
+    # 6. Stream output token by token (with adapter):
     # python src/inference/generate_qwen3.py \
-    #   --model-path <path_to_your_mlx_model> \
+    #   --model-path mlx_models/Qwen3-4B-mlx \
+    #   --adapter-path ADAPTERS/qwen3_4b_lora_sacredhunger \
     #   --prompt "Write a haiku about a cat." \
     #   --verbose
