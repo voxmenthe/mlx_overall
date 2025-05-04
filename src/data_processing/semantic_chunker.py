@@ -97,10 +97,10 @@ def refine_boundaries(chunks: list[str],
 if __name__ == "__main__":
     import argparse
 
-    DEFAULT_TARGET_WORDS = 480 # 480 520 680 790
+    DEFAULT_TARGET_WORDS = 350 # 350 480 520 570 680 730 790
     DEFAULT_MODEL_NAME = "lightonai/modernbert-embed-large"
-    DEFAULT_BOOK_PATH = "allthekingsmen.txt"
-    DEFAULT_OUTPUT_PATH = f"allthekingsmen_{DEFAULT_TARGET_WORDS}.json"
+    DEFAULT_BOOK_PATH = "sacredhunger.txt"
+    DEFAULT_OUTPUT_PATH = f"sacredhunger_{DEFAULT_TARGET_WORDS}.json"
 
     ap = argparse.ArgumentParser(
         description="Chunk a book into semantic segments, refining initial paragraph-based chunks."
