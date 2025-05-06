@@ -35,7 +35,7 @@ python prepare_training_data.py \
     --seed 123
 
 python prepare_training_data.py \
-    --input_files sacredhunger_350.json sacredhunger_480.json sacredhunger_520.json sacredhunger_570.json sacredhunger_680.json sacredhunger_730.json sacredhunger_790.json \
+    --input_files sacred_hunger_350.json sacred_hunger_480.json sacred_hunger_520.json sacred_hunger_570.json sacred_hunger_680.json sacred_hunger_730.json sacred_hunger_790.json \
     --output_dir ../../DATA/SACREDHUNGER/ \
     --train_ratio 0.93 \
     --seed 211
@@ -56,13 +56,23 @@ cat temp_prompt.txt | python src/inference/generate_qwen3.py \
 
 cat temp_prompt.txt | python src/inference/generate_qwen3.py \
 --model-path mlx_models/Qwen3-14B-mlx \
---adapter-path ADAPTERS/qwen3_14b_dora_novels_sh_atkm \
+--adapter-path ADAPTERS/qwen3_14b_dora_sacredhunger_multi \
 --prompt "-" \
 --repetition-penalty 1.1 \
 --temp 0.75 \
 --top-p 0.95 
 
+# NO ADAPTER
+cat temp_prompt_sh1.txt | python src/inference/generate_qwen3.py \
+--model-path mlx_models/Qwen3-14B-mlx \
+--prompt "-" \
+--repetition-penalty 1.1 \
+--temp 0.75 \
+--top-p 0.95 
+
+
 books:
+tomsawyer.txt
 Fatherland_HarrisRobert.txt
 Great Gatsby, The - Francis Scott Fitzgerald.txt
 Imperium_ANovelofAncientRo_HarrisRobert.txt
