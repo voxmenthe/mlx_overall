@@ -45,7 +45,7 @@ BATCH_SIZE=1      # Batch size (reduce if hitting memory limits)
 LEARNING_RATE=1e-5 # Learning rate
 SAVE_EVERY=100     # Save adapter weights every N iterations
 NUM_LAYERS=-1 # 16      # Number of layers to apply LoRA to (-1 for all)
-MAX_SEQ_LENGTH=3827 # Max sequence length model can handle
+MAX_SEQ_LENGTH=3827 # 3927 # Max sequence length model can handle
 
 # Evaluation parameters (optional)
 RUN_TEST=false     # Set to true to run evaluation on test.jsonl after training

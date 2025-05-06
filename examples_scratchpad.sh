@@ -70,9 +70,21 @@ cat temp_prompt_sh1.txt | python src/inference/generate_qwen3.py \
 --temp 0.75 \
 --top-p 0.95 
 
+#qwen3_14b_dora_novels_sh_atkm \
+python src/evaluations/run_evaluations.py \
+    --model-path mlx_models/Qwen3-14B-mlx \
+    --adapter-path ADAPTERS/qwen3_14b_dora_sacredhunger_multi \
+    --valid-jsonl-path DATA/SACREDHUNGER/valid.jsonl \
+    --output-dir evaluations/outputs \
+    --num-examples 5 \
+    --temp 0.85 \
+    --top-p 0.94 \
+    --repetition-penalty 1.1
+
 
 books:
 tomsawyer.txt
+/Volumes/bdrive/repos/booksintextflat/A/AmericanGods_GaimanNeil.txt
 Fatherland_HarrisRobert.txt
 Great Gatsby, The - Francis Scott Fitzgerald.txt
 Imperium_ANovelofAncientRo_HarrisRobert.txt
